@@ -1,0 +1,17 @@
+To run this code you would invoke the following command in the root of a Subversion working copy in your Mercurial repository:
+erl -pa <path to hgsvn.beam parent dir> -noshell -s hgsvn -s init stop
+
+You can also specify a set of related repositories (ex: from a common server) and update them together in revision order:
+erl -pa <path to hgsvn.beam parent dir> -noshell -s hgsvn -s init stop -repo_set path/to/repo1 path/to/repo2
+
+You can even specify multiple sets of related repositories and update them set by set in revision order:
+erl -pa <path to hgsvn.beam parent dir> -noshell -s hgsvn -s init stop -repo_set path/to/repo1 path/to/repo2 -repo_set path/to/repo3 -repo_set path/to/repo4
+
+Further to that you can specify stop revisions for each repository in a set:
+erl -pa <path to hgsvn.beam parent dir> -noshell -s hgsvn -s init stop -repo_set <path/to/repo1> <path/to/repo2> -stop_set 1023 1432
+
+If you specify a stop_set for one repo_set you must provide one for every repo_set. It is perfectly workable to put nothing after the -repo_set as hgsvn will interpret that to mean HEAD for every repository in the repo_set.
+
+You can have an unlimited number of repository sets and an unlimited number of Subversion paths per repository set.
+
+This code was developed to work with the output format from Subversion 1.4.4 (r25188) on Mac OS X 10.5 and Subversion 1.4.6 (r28521) on Ubuntu Hardy Heron. It should work with any 1.4.x Subversion though. Make sure to post any issues here as comments (please include the output of svn info).
