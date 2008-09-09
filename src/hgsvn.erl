@@ -66,6 +66,6 @@ commit([{Rev, Author, Date, Msg}|Logs], BaseRevs, StopRevs, Repos) ->
     util:system("hg addremove"),
     util:system("hg ci -u \"~s\" -d \"~s\" -m \"~s\"",
         lists:map(fun util:escape/1, [Author, Date,
-            [io_lib:format("[SVN r~w]", [Rev])|util:join("\n", Msg)]])),
+            [io_lib:format("[SVN r~w]", [Rev])|util:join(util:escape(Msg))]])),
     commit(Logs, BaseRevs, StopRevs, Repos).
 

@@ -8,14 +8,15 @@ system(Command) ->
     io:format(Output),
     Output.
 
-escape(String) ->
-    {ok, Escaped, _} = regexp:gsub(String, "\"", "\\\""),
-    Escaped.
+escape([]) -> [];
+escape([$\\|Chars]) -> [$\\,$\\|escape(Chars)];
+escape([$"|Chars]) -> [$\\,$"|escape(Chars)];
+escape([C|Chars]) -> [C|escape(Chars)].
 
-join(_, [String]) -> String;
-join(_, [String,[]]) -> String;
-join(Pad, [String|Strings]) ->
-    [io_lib:format("~s~s", [String, Pad])|join(Pad, Strings)].
+join([String]) -> String;
+join([String,[]]) -> String;
+join([String|Strings]) ->
+    [io_lib:format("~s~n", [String])|join(Strings)].
 
 arglist(Strings) ->
     lists:flatmap(fun(X)->io_lib:format(" \"~s\"", [escape(X)]) end, Strings).
