@@ -1,10 +1,11 @@
 -module(hgsvn).
 -export([start/0]).
 
-start() -> run(init:get_argument(watch),
+start() -> start(os:cmd("hg st")).
+start([]) -> run(init:get_argument(watch),
                repo_sets(init:get_argument(repo_set)),
-               stop_sets(init:get_argument(stop_set))).
-
+               stop_sets(init:get_argument(stop_set)));
+start(Uncommitted) -> io:format("Uncommitted changes. Please hg commit first.").
 run({ok,[[Watch]]}, RepoSets, [[]]) ->
     Sleep = time(string:to_integer(Watch)),
     watch(Sleep, RepoSets);

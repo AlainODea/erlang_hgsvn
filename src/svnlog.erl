@@ -1,5 +1,6 @@
 -module(svnlog).
 -export([repos/1, repos_full/1]).
+-export([metadata/1]).
 
 repos([]) -> {[],[]};
 repos([{Rev,Repo}|Repos]) ->
@@ -53,26 +54,25 @@ log_info(["-----" ++ _,Header,[]|Lines]) ->
     DateCode = string:substr(Date, 1, 25),
     [{Rev, Author, DateCode, Msg}|log_info(MoreLogs)].
 
-metadata(Header) -> lines([], lists:reverse(Header)).
+metadata(Header) ->
+    [NumLines, NameEnd, Date] = lines(1, [], lists:reverse(Header)),
+    [Rev, Author] = rev(length(Header)-NameEnd, 1, [], Header),
+    [NumLines,Date,Author,Rev].
 
-lines(Lines, " | " ++ Header) ->
+lines(N, Lines, " | " ++ Header) ->
     {NumLines, " line" ++ _} = string:to_integer(Lines),
-    [NumLines|date([], Header)];
-lines(Lines, [Char|Header]) -> lines([Char|Lines], Header).
+    [NumLines|date(N+3, [], Header)];
+lines(N, Lines, [Char|Header]) -> lines(N+1, [Char|Lines], Header).
 
-date(Date, " | " ++ Header) ->
-    [Date|user([], Header)];
-date(Date, [Char|Header]) -> date([Char|Date], Header).
+date(N, Date, " | " ++ _) -> [N+3, Date];
+date(N, Date, [Char|Header]) -> date(N+1, [Char|Date], Header).
 
-user(User, [$ ,$|,$ ,Num|Header]) ->
-    case string:to_integer([Num]) of
-        {error, no_integer} -> user([Num,$ ,$|,$ |User], Header);
-        _ -> [User,rev([Num], Header)]
-    end;
-user(User, [Char|Header]) -> user([Char|User], Header).
+rev(NameEnd, N, Rev, " | " ++ Header) ->
+    {RevNum, ""} = string:to_integer(lists:reverse(Rev)),
+    [RevNum|user(NameEnd, N+1, [], Header)];
+rev(NameEnd, N, [], [$r|Header]) -> rev(NameEnd, N+1, [], Header);
+rev(NameEnd, N, Rev, [Char|Header]) -> rev(NameEnd, N+1, [Char|Rev], Header).
 
-rev(Rev, [$r]) ->
-    {RevNum, ""} = string:to_integer(Rev),
-    RevNum;
-rev(Rev, [Char|Header]) -> rev([Char|Rev], Header).
+user(NameEnd, NameEnd, User, _) -> [lists:reverse(User)];
+user(NameEnd, N, User, [Char|Header]) -> user(NameEnd, N+1, [Char|User], Header).
 
