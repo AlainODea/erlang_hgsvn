@@ -5,7 +5,7 @@ start() -> start(os:cmd("hg st")).
 start([]) -> run(init:get_argument(watch),
                repo_sets(init:get_argument(repo_set)),
                stop_sets(init:get_argument(stop_set)));
-start(Uncommitted) -> io:format("Uncommitted changes. Please hg commit first.").
+start(Uncommitted) -> io:format("Uncommitted changes. Please hg commit first:~n", [Uncommitted]).
 run({ok,[[Watch]]}, RepoSets, [[]]) ->
     Sleep = time(string:to_integer(Watch)),
     watch(Sleep, RepoSets);
@@ -67,6 +67,6 @@ commit([{Rev, Author, Date, Msg}|Logs], BaseRevs, StopRevs, Repos) ->
     util:system("hg addremove"),
     util:system("hg ci -u \"~s\" -d \"~s\" -m \"~s\"",
         lists:map(fun util:escape/1, [Author, Date,
-            [io_lib:format("[SVN r~w]", [Rev])|util:join(util:escape(Msg))]])),
+            [io_lib:format("[SVN r~w]", [Rev])|util:join(util:deep_escape(Msg))]])),
     commit(Logs, BaseRevs, StopRevs, Repos).
 

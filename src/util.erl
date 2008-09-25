@@ -13,6 +13,9 @@ escape([$\\|Chars]) -> [$\\,$\\|escape(Chars)];
 escape([$"|Chars]) -> [$\\,$"|escape(Chars)];
 escape([C|Chars]) -> [C|escape(Chars)].
 
+deep_escape([]) -> [];
+deep_escape([String|Strings]) -> [escape(String)|deep_escape(Strings)].
+
 join([String]) -> String;
 join([String,[]]) -> String;
 join([String|Strings]) ->
