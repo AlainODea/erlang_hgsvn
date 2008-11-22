@@ -11,7 +11,8 @@ system(Command) ->
 escape([]) -> [];
 escape([$\\|Chars]) -> [$\\,$\\|escape(Chars)];
 escape([$"|Chars]) -> [$\\,$"|escape(Chars)];
-escape([C|Chars]) -> [C|escape(Chars)].
+escape([C|Chars]) -> [C|escape(Chars)];
+escape(Binary) when is_binary(Binary) -> escape(binary_to_list(Binary)).
 
 deep_escape([]) -> [];
 deep_escape([String|Strings]) -> [escape(String)|deep_escape(Strings)].

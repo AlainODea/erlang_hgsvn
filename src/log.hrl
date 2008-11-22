@@ -1,0 +1,1 @@
+-record(log, {rev, user, date, lines, comment}).

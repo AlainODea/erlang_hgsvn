@@ -1,5 +1,6 @@
 -module(hgsvn).
 -export([start/0]).
+-include("log.hrl").
 
 start() -> start(os:cmd("hg st")).
 start([]) -> run(init:get_argument(watch),
@@ -57,16 +58,17 @@ commit_set(Repos) ->
 
 commit([], _, _, _) -> ok;
 commit(_, [], _, []) -> ok;
-commit([{Rev, _, _, _}|_] = Logs, BaseRevs, [{Rev, Repo}|StopRevs], Repos) ->
+commit([#log{rev=Rev}|_] = Logs, BaseRevs, [{Rev, Repo}|StopRevs], Repos) ->
     commit(Logs, BaseRevs, StopRevs,
         lists:filter(fun(ARepo) -> ARepo =/= Repo end, Repos));
-commit([{Rev, _, _, _}|_] = Logs, [{Rev, Repo}|BaseRevs], StopRevs, Repos) ->
+commit([#log{rev=Rev}|_] = Logs, [{Rev, Repo}|BaseRevs], StopRevs, Repos) ->
     commit(Logs, BaseRevs, StopRevs, [Repo|Repos]);
-commit([{Rev, Author, Date, Msg}|Logs], BaseRevs, StopRevs, Repos) ->
+commit([#log{rev=Rev, user=Author, date=Date, comment=Msg}|Logs], BaseRevs, StopRevs, Repos) ->
     util:system("svn up -r ~w~s", [Rev, util:arglist(Repos)]),
     util:system("hg addremove"),
+    <<HgDate:19/binary, _/binary>> = Date, 
     util:system("hg ci -u \"~s\" -d \"~s\" -m \"~s\"",
-        lists:map(fun util:escape/1, [Author, Date,
-            [io_lib:format("[SVN r~w]", [Rev])|util:join(util:deep_escape(Msg))]])),
+        lists:map(fun util:escape/1, [Author, HgDate,
+            [io_lib:format("[SVN r~w]", [Rev])|util:escape(Msg)]])),
     commit(Logs, BaseRevs, StopRevs, Repos).
 
